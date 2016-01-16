@@ -1,14 +1,15 @@
 import socket
 import sys
-
+import os
+import mimetypes
 
 def response_ok(body=b"this is a pretty minimal response", mimetype=b"text/plain"):
     """returns a basic HTTP response"""
     resp = []
     resp.append(b"HTTP/1.1 200 OK")
-    resp.append(b"Content-Type: text/plain")
+    resp.append(b"Content-Type: " + mimetype)
     resp.append(b"")
-    resp.append(b"this is a pretty minimal response")
+    resp.append(body)
     return b"\r\n".join(resp)
 
 
@@ -22,7 +23,11 @@ def response_method_not_allowed():
 
 def response_not_found():
     """returns a 404 Not Found response"""
-    return b""
+    resp = []
+    resp.append("HTTP/1.1 404 Not Found")
+    resp.append("")
+    resp.append("404 Sorry! This is not the web page you were looking for :-)")
+    return "\r\n".join(resp).encode('utf8')
 
 
 def parse_request(request):
@@ -35,8 +40,22 @@ def parse_request(request):
 
 def resolve_uri(uri):
     """This method should return appropriate content and a mime type"""
-    return b"still broken", b"text/plain"
-
+    cwd = os.getcwd()
+    home_dir = cwd + "/webroot"
+    # Return a directory listing if it is a dir
+    if os.path.isdir(home_dir+uri):
+        dirlist = os.listdir(home_dir+uri)
+        contents = '\n'.join(dirlist)
+        return contents.encode('utf8'), b"text/plain"
+    # Return the file contents if it is a file
+    elif os.path.isfile(home_dir+uri):
+        mimetype, encoding = mimetypes.guess_type(home_dir+uri)
+        with open(home_dir+uri, 'rb') as file_content:
+            contents = file_content.read()
+        return contents, mimetype.encode('utf8')
+    # Error if no file or directory at uri
+    else:
+        raise NameError
 
 def server(log_buffer=sys.stderr):
     address = ('127.0.0.1', 10000)
