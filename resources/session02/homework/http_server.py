@@ -45,8 +45,11 @@ def resolve_uri(uri):
     # Return a directory listing if it is a dir
     if os.path.isdir(home_dir+uri):
         dirlist = os.listdir(home_dir+uri)
-        contents = '\n'.join(dirlist)
-        return contents.encode('utf8'), b"text/plain"
+        paths = ["  <a href=\"{}\">{}</a><br>".format(filename, filename) for filename in dirlist]
+        paths.insert(0, "<!DOCTYPE html>\n<html><body>")
+        paths.append("</body></html>")
+        contents = '\n'.join(paths)
+        return contents.encode('utf8'), b"text/html"
     # Return the file contents if it is a file
     elif os.path.isfile(home_dir+uri):
         mimetype, encoding = mimetypes.guess_type(home_dir+uri)
