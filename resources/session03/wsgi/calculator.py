@@ -20,10 +20,7 @@ def subtract(arg1, arg2):
 
 
 def divide(arg1, arg2):
-    try:
-        return("{} / {} = {}".format(arg1, arg2, arg1/arg2))
-    except ZeroDivisionError:
-        return("Divide by zero error")
+    return("{} / {} = {}".format(arg1, arg2, arg1/arg2))
 
 
 
@@ -61,9 +58,9 @@ def application(environ, start_response):
         func, arg1, arg2 = resolve_path(path)
         status = "200 OK"
         body = func(arg1, arg2)
-    except ValueError:
-        status = "200 OK"
-        body = "{} contains invalid arguments".format(path)
+    except (ZeroDivisionError, ValueError):
+        status = "400 Bad Request"
+        body = "<h1>Bad Request<h1>"
     except NameError:
         status = "404 Not Found"
         body = "<h1>Not Found</h1>"
