@@ -122,26 +122,24 @@ def get_score_data(elem):
     }
     return data
 
+def add_color(inspection_data):
+    '''
+    Add color and symbols for high scores
+    '''
+    if inspection_data[u'Average Score'] > 50:
+        color = 'ff0000'
+    elif inspection_data[u'Average Score'] > 30:
+        color = 'ffff00'
+    else:
+        color = '33cc33'
+    if inspection_data[u'High Score'] > 80:
+        size = 'large'
+    else:
+        size = 'medium'
+    return({u'marker-color': color,
+            u'marker-size': size})
 
-'''
-def result_generator(count):
-    use_params = {
-        'Inspection_Start': '2/1/2013',
-        'Inspection_End': '2/1/2015',
-        'Zip_Code': '98101'
-    }
-    # html = get_inspection_page(**use_params)
-    html = load_inspection_page('inspection_page.html')
-    parsed = parse_source(html)
-    import pdb; pdb.set_trace()
-    content_col = parsed.find("td", id="contentcol")
-    data_list = restaurant_data_generator(content_col)
-    for data_div in data_list[:count]:
-        metadata = extract_restaurant_metadata(data_div)
-        inspection_data = get_score_data(data_div)
-        metadata.update(inspection_data)
-        yield metadata
-'''
+    
 def sorted_results(sort_type, count, reverse_flag):
     '''
     Return list of dictionaries sorted in order of average score.
@@ -164,6 +162,9 @@ def sorted_results(sort_type, count, reverse_flag):
         metadata = extract_restaurant_metadata(data_div)
         inspection_data = get_score_data(data_div)
         metadata.update(inspection_data)
+      #  result.append(metadata)
+        color_data = add_color(inspection_data)
+        metadata.update(color_data)
         result.append(metadata)
     result.sort(key=operator.itemgetter(SORTING_TYPES[sort_type]),
             reverse=not reverse_flag)
@@ -178,8 +179,8 @@ def get_geojson(result):
     geojson = geocoded.geojson
     inspection_data = {}
     use_keys = (
-        'Business Name', 'Average Score', 'Total Inspections', 'High Score'
-    )
+        'Business Name', 'Average Score', 'Total Inspections', 'High Score',
+        'marker-color', 'marker-size')
     for key, val in result.items():
         if key not in use_keys:
             continue
