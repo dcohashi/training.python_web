@@ -158,17 +158,16 @@ def sorted_results(sort_type, count, reverse_flag):
     parsed = parse_source(html)
     content_col = parsed.find("td", id="contentcol")
     data_list = restaurant_data_generator(content_col)
-    for data_div in data_list[:count]:
+    for data_div in data_list:
         metadata = extract_restaurant_metadata(data_div)
         inspection_data = get_score_data(data_div)
         metadata.update(inspection_data)
-      #  result.append(metadata)
         color_data = add_color(inspection_data)
         metadata.update(color_data)
         result.append(metadata)
     result.sort(key=operator.itemgetter(SORTING_TYPES[sort_type]),
             reverse=not reverse_flag)
-    return(result)
+    return(result[:count])
 
 
 def get_geojson(result):
@@ -195,12 +194,12 @@ if __name__ == '__main__':
     # Parse the input arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--sort_type", 
-            help="field to sort on", 
+            help="field to sort on, default = avg", 
             choices=['avg', 'high','total'],
             default='avg'
             )
     parser.add_argument("-c", "--count", type=int,
-            help="number of properties", default=20)
+            help="number of properties, default=20", default=20)
     parser.add_argument("-r", "--reverse", action="store_true", 
             help="display in reverse order", default=False)
     args = parser.parse_args()
